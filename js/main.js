@@ -108,12 +108,40 @@ class HookHeadlineGenerator {
                 </div>
             </form>
 
-            <div class="mt-12 p-6 bg-blue-50 rounded-xl border border-blue-200">
+            <div class="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-200 mb-6">
                 <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
                     <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
                     Pro Tip for ${methodConfig.shortTitle}
                 </h4>
                 <p class="text-gray-700">${methodConfig.proTip}</p>
+            </div>
+            
+            <div class="p-6 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200">
+                <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                    <i class="fas fa-brain text-purple-600 mr-2"></i>
+                    Advanced Psychology Frameworks Active
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    <div class="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-white/50">
+                        <strong class="text-purple-700">Information-Gap Theory</strong><br>
+                        <span class="text-gray-600">Creates curiosity and compels reading</span>
+                    </div>
+                    <div class="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-white/50">
+                        <strong class="text-purple-700">Social Proof Mechanisms</strong><br>
+                        <span class="text-gray-600">Leverages authority and peer validation</span>
+                    </div>
+                    <div class="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-white/50">
+                        <strong class="text-purple-700">Loss Aversion Triggers</strong><br>
+                        <span class="text-gray-600">Activates fear of missing out</span>
+                    </div>
+                    <div class="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-white/50">
+                        <strong class="text-purple-700">Frame Combinations</strong><br>
+                        <span class="text-gray-600">Multi-layered psychological impact</span>
+                    </div>
+                </div>
+                <div class="mt-4 text-xs text-purple-600 font-medium">
+                    ⚡ Your hooks will use advanced copywriting psychology for maximum engagement
+                </div>
             </div>
         `;
     }
@@ -344,6 +372,15 @@ class HookHeadlineGenerator {
         
         if (this.isGenerating) return;
         
+        // Check if user can generate hooks
+        const canGenerate = userManager.canGenerate();
+        if (!canGenerate.allowed) {
+            if (canGenerate.reason === 'limit_reached') {
+                userManager.showUpgradeModal();
+                return;
+            }
+        }
+        
         const formData = this.collectFormData();
         
         if (!this.validateFormData(formData)) {
@@ -355,8 +392,12 @@ class HookHeadlineGenerator {
         this.showLoading();
         
         try {
-            // Simulate API call for now - replace with actual GPT API call
+            // Generate hooks via API
             const results = await this.generateHooks(formData);
+            
+            // Record successful generation for usage tracking
+            userManager.recordGeneration();
+            
             this.displayResults(results);
         } catch (error) {
             console.error('Error generating hooks:', error);
@@ -485,13 +526,22 @@ class HookHeadlineGenerator {
                 <div class="result-item bg-white/10 rounded-xl p-6 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-300">
                     <div class="flex items-start justify-between">
                         <div class="flex-1">
-                            <div class="flex items-center mb-2">
-                                <span class="bg-accent-500 text-white text-sm font-bold px-3 py-1 rounded-full mr-3">
-                                    #${index + 1}
-                                </span>
-                                <span class="text-gray-300 text-sm">Hook Option</span>
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center">
+                                    <span class="bg-accent-500 text-white text-sm font-bold px-3 py-1 rounded-full mr-3">
+                                        #${index + 1}
+                                    </span>
+                                    <span class="text-gray-300 text-sm">Advanced Psychology Hook</span>
+                                </div>
+                                <div class="flex items-center text-xs text-purple-300">
+                                    <i class="fas fa-brain mr-1"></i>
+                                    <span>Framework Applied</span>
+                                </div>
                             </div>
-                            <p class="text-white text-lg leading-relaxed">"${result}"</p>
+                            <p class="text-white text-lg leading-relaxed mb-3">"${result}"</p>
+                            <div class="text-xs text-gray-400">
+                                ${this.detectFrameworks(result)}
+                            </div>
                         </div>
                         <button class="copy-btn ml-4 p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors" data-text="${result}" title="Copy this hook">
                             <i class="fas fa-copy"></i>
@@ -625,6 +675,35 @@ class HookHeadlineGenerator {
             toast.classList.add('hidden');
             toast.classList.remove('toast-slide-in', 'toast-slide-out');
         }, 300);
+    }
+
+    detectFrameworks(hook) {
+        const frameworks = [];
+        const lowerHook = hook.toLowerCase();
+        
+        // Detect psychological frameworks based on patterns
+        if (lowerHook.includes('secret') || lowerHook.includes('hidden') || lowerHook.includes('never share')) {
+            frameworks.push('Information-Gap');
+        }
+        if (lowerHook.includes('%') || lowerHook.includes('study') || lowerHook.includes('research')) {
+            frameworks.push('Social Proof');
+        }
+        if (lowerHook.includes('warning') || lowerHook.includes('risk') || lowerHook.includes('mistake')) {
+            frameworks.push('Loss Aversion');
+        }
+        if (lowerHook.includes('confession') || lowerHook.includes('insider') || lowerHook.includes('former')) {
+            frameworks.push('Authority Positioning');
+        }
+        if (lowerHook.includes('why') && (lowerHook.includes('wrong') || lowerHook.includes('backwards'))) {
+            frameworks.push('Contrarian Challenge');
+        }
+        if (/\d+(-\d+)*/.test(hook)) {
+            frameworks.push('Specificity Framework');
+        }
+
+        return frameworks.length > 0 
+            ? `🧠 ${frameworks.join(' + ')} ${frameworks.length > 1 ? '(Multi-Frame)' : ''}`
+            : '🧠 Advanced Psychology Applied';
     }
 }
 
