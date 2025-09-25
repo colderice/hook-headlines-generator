@@ -1,0 +1,50 @@
+{
+  "name": "hook-headlines-generator",
+  "version": "1.0.0",
+  "description": "Professional Hook & Headlines Generator for SMB owners, coaches, trainers, and course creators",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve . -p 3000",
+    "dev": "npx serve . -p 3000 --cors",
+    "build": "echo 'No build step required for static site'",
+    "deploy": "vercel --prod",
+    "test": "echo 'Tests not implemented yet'",
+    "lint": "echo 'Linting not configured yet'"
+  },
+  "keywords": [
+    "hooks",
+    "headlines",
+    "copywriting",
+    "ai",
+    "gpt",
+    "content-creation",
+    "marketing",
+    "smb",
+    "coaches",
+    "course-creators"
+  ],
+  "author": "Hook & Headlines Generator Team",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/hook-headlines-generator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/hook-headlines-generator/issues"
+  },
+  "homepage": "https://yourdomain.com",
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ],
+  "dependencies": {},
+  "optionalDependencies": {},
+  "peerDependencies": {}
+}
