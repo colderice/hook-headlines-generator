@@ -1,57 +1,108 @@
-/* Custom styles for Hook & Headlines Generator */
-
-/* Smooth scrolling and overall improvements */
-html {
-    scroll-behavior: smooth;
+/* Custom animations and styles */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* Custom animations and transitions */
-.input-method-card {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
 }
 
-.input-method-card:hover {
-    transform: translateY(-4px);
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
 }
 
-.input-method-card.active {
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Method buttons */
+.method-btn {
+    transition: all 0.2s ease;
+}
+
+.method-btn.active {
+    border-color: #0284c7;
+    background-color: #f0f9ff;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+}
+
+.method-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Hook cards */
+.hook-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.hook-card:hover {
+    border-color: #0284c7;
+    box-shadow: 0 8px 25px rgba(2, 132, 199, 0.15);
     transform: translateY(-2px);
 }
 
-.input-method-card.active .bg-white {
-    border-color: #0ea5e9;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 3px rgba(14, 165, 233, 0.1);
+.hook-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #0284c7, #0ea5e9);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
 }
 
-/* Form animations */
-.form-slide-in {
-    animation: slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+.hook-card:hover::before {
+    transform: scaleX(1);
 }
 
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.copy-btn {
+    transition: all 0.2s ease;
 }
 
-/* Results animations */
-.result-item {
-    animation: fadeInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    animation-fill-mode: both;
+.copy-btn:hover {
+    background-color: #f3f4f6;
+    transform: scale(1.05);
 }
 
-.result-item:nth-child(1) { animation-delay: 0.1s; }
-.result-item:nth-child(2) { animation-delay: 0.2s; }
-.result-item:nth-child(3) { animation-delay: 0.3s; }
-.result-item:nth-child(4) { animation-delay: 0.4s; }
-.result-item:nth-child(5) { animation-delay: 0.5s; }
+.copy-btn.copied {
+    background-color: #10b981;
+    color: white;
+}
 
-@keyframes fadeInScale {
+/* Loading animation */
+.loading-dots::after {
+    content: '';
+    animation: loading-dots 1.5s infinite;
+}
+
+@keyframes loading-dots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
+
+/* Modal animations */
+.modal-enter {
+    animation: modalEnter 0.3s ease-out;
+}
+
+@keyframes modalEnter {
     from {
         opacity: 0;
         transform: scale(0.9) translateY(20px);
@@ -62,158 +113,111 @@ html {
     }
 }
 
-/* Custom form styling */
-.form-input {
-    transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-}
-
-.form-input:focus {
-    transform: translateY(-2px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-/* Custom button styles */
-.btn-primary {
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, #0284c7 0%, #075985 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 20px 25px -5px rgba(14, 165, 233, 0.4);
-}
-
-.btn-primary:active {
-    transform: translateY(0);
-}
-
-/* Copy button animation */
-.copy-success {
-    animation: copyPulse 0.6s ease-out;
-}
-
-@keyframes copyPulse {
-    0% {
-        transform: scale(1);
-        background-color: #10b981;
-    }
-    50% {
-        transform: scale(1.05);
-        background-color: #059669;
-    }
-    100% {
-        transform: scale(1);
-        background-color: #10b981;
-    }
-}
-
-/* Loading spinner enhancement */
-.loading-spinner {
-    animation: spin 1s linear infinite;
-    filter: drop-shadow(0 4px 8px rgba(14, 165, 233, 0.3));
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* Toast notification styles */
-.toast-slide-in {
-    animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.toast-slide-out {
-    animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(100%);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideOutRight {
-    from {
-        opacity: 1;
-        transform: translateX(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(100%);
-    }
-}
-
-/* Gradient text effects */
-.gradient-text {
-    background: linear-gradient(135deg, #0ea5e9, #f59e0b);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
 /* Custom scrollbar */
-::-webkit-scrollbar {
+.custom-scrollbar::-webkit-scrollbar {
     width: 8px;
 }
 
-::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar-track {
     background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #0ea5e9, #0284c7);
     border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #0284c7, #075985);
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
 }
 
-/* Responsive improvements */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Form validation styles */
+.error-border {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.success-border {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* Toast notification styles */
+.toast-success {
+    border-left: 4px solid #10b981;
+}
+
+.toast-error {
+    border-left: 4px solid #ef4444;
+}
+
+.toast-warning {
+    border-left: 4px solid #f59e0b;
+}
+
+.toast-info {
+    border-left: 4px solid #3b82f6;
+}
+
+/* Progress bar */
+.progress-bar {
+    height: 4px;
+    background: linear-gradient(90deg, #0284c7, #0ea5e9);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
-    .input-method-card {
-        margin-bottom: 1rem;
+    .method-btn {
+        padding: 12px;
     }
     
-    .hero-text {
-        font-size: 2.5rem;
-        line-height: 1.1;
+    .hook-card {
+        padding: 16px;
     }
     
-    .form-container {
-        padding: 1.5rem;
+    .modal-content {
+        margin: 20px;
     }
+}
+
+/* Utility classes */
+.text-gradient {
+    background: linear-gradient(135deg, #0284c7, #0ea5e9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.bg-gradient-brand {
+    background: linear-gradient(135deg, #0284c7, #0ea5e9);
+}
+
+.shadow-brand {
+    box-shadow: 0 10px 25px rgba(2, 132, 199, 0.2);
 }
 
 /* Focus styles for accessibility */
-.focus-visible {
-    outline: 2px solid #0ea5e9;
-    outline-offset: 2px;
+button:focus,
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    ring-width: 2px;
+    ring-color: #0ea5e9;
+    ring-opacity: 0.5;
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-    .input-method-card .bg-white {
-        border: 2px solid #000;
+    .method-btn {
+        border-width: 2px;
     }
     
-    .text-gray-600 {
-        color: #000 !important;
+    .hook-card {
+        border-width: 2px;
     }
 }
 
@@ -223,21 +227,5 @@ html {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
-    }
-}
-
-/* Print styles */
-@media print {
-    .no-print {
-        display: none !important;
-    }
-    
-    body {
-        background: white !important;
-    }
-    
-    .bg-gradient-to-r {
-        background: #f8f9fa !important;
-        color: #000 !important;
     }
 }

@@ -1,22 +1,47 @@
 {
-  "buildCommand": "",
-  "outputDirectory": "./",
-  "installCommand": "echo 'No install needed'",
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/generate-hooks.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
   "functions": {
     "api/generate-hooks.js": {
       "maxDuration": 30
     }
   },
-  "rewrites": [
+  "headers": [
     {
-      "source": "/api/generate-hooks",
-      "destination": "/api/generate-hooks.js"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
     }
   ]
 }

@@ -1,291 +1,477 @@
-// Simple Authentication & Usage Tracking System
-class UserManager {
+/**
+ * Authentication Module for Hook & Headlines Generator Pro
+ * Handles user registration, login, trial limits, and session management
+ */
+
+class AuthManager {
     constructor() {
+        this.currentUser = null;
+        this.isAuthenticated = false;
+        this.trialLimit = 1; // Free trial allows 1 hook generation
         this.init();
     }
 
     init() {
-        this.checkUserStatus();
-        this.setupAuthUI();
+        this.bindEvents();
+        this.checkAuthState();
+        this.updateUI();
     }
 
-    // Check if user exists and their subscription status
-    checkUserStatus() {
-        const userData = this.getUserData();
-        
-        if (!userData.userId) {
-            // New user - create free trial
-            this.createFreeTrialUser();
-        }
-        
-        this.updateUIBasedOnStatus(userData);
-    }
+    bindEvents() {
+        // Modal controls
+        document.getElementById('signupBtn').addEventListener('click', () => this.showSignupModal());
+        document.getElementById('loginBtn').addEventListener('click', () => this.showLoginModal());
+        document.getElementById('heroStartBtn').addEventListener('click', () => this.handleHeroStart());
+        document.getElementById('closeModal').addEventListener('click', () => this.hideModal());
+        document.getElementById('modalBackdrop').addEventListener('click', () => this.hideModal());
 
-    // Create new free trial user
-    createFreeTrialUser() {
-        const userData = {
-            userId: this.generateUserId(),
-            email: '',
-            subscriptionType: 'free',
-            generationsToday: 0,
-            generationsTotal: 0,
-            lastUsed: new Date().toDateString(),
-            trialStarted: new Date().toISOString(),
-            isSubscribed: false,
-            freeGenerationsLimit: 5
-        };
-        
-        localStorage.setItem('hookUserData', JSON.stringify(userData));
-        return userData;
-    }
+        // Form submissions
+        document.getElementById('signupForm').addEventListener('submit', (e) => this.handleSignup(e));
+        document.getElementById('loginForm').addEventListener('submit', (e) => this.handleLogin(e));
 
-    // Get user data from localStorage
-    getUserData() {
-        const stored = localStorage.getItem('hookUserData');
-        if (stored) {
-            const userData = JSON.parse(stored);
-            
-            // Reset daily counter if new day
-            if (userData.lastUsed !== new Date().toDateString()) {
-                userData.generationsToday = 0;
-                userData.lastUsed = new Date().toDateString();
-                localStorage.setItem('hookUserData', JSON.stringify(userData));
-            }
-            
-            return userData;
-        }
-        return { userId: null };
-    }
+        // Form toggle
+        document.getElementById('toggleAuthForm').addEventListener('click', () => this.toggleAuthForm());
 
-    // Check if user can generate hooks
-    canGenerate() {
-        const userData = this.getUserData();
-        
-        if (userData.isSubscribed) {
-            return { allowed: true, reason: 'subscribed' };
-        }
-        
-        if (userData.generationsToday < userData.freeGenerationsLimit) {
-            return { allowed: true, reason: 'free_trial', remaining: userData.freeGenerationsLimit - userData.generationsToday };
-        }
-        
-        return { 
-            allowed: false, 
-            reason: 'limit_reached',
-            limit: userData.freeGenerationsLimit
-        };
-    }
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
 
-    // Record a generation
-    recordGeneration() {
-        const userData = this.getUserData();
-        userData.generationsToday += 1;
-        userData.generationsTotal += 1;
-        localStorage.setItem('hookUserData', JSON.stringify(userData));
-        
-        this.updateUIBasedOnStatus(userData);
-    }
-
-    // Update UI based on user status
-    updateUIBasedOnStatus(userData) {
-        const statusInfo = this.canGenerate();
-        
-        // Create or update status bar
-        this.createStatusBar(statusInfo, userData);
-        
-        // Show upgrade prompt if needed
-        if (!statusInfo.allowed) {
-            this.showUpgradeModal();
-        }
-    }
-
-    // Create status bar in header
-    createStatusBar(statusInfo, userData) {
-        const existingStatus = document.getElementById('user-status-bar');
-        if (existingStatus) existingStatus.remove();
-
-        const statusBar = document.createElement('div');
-        statusBar.id = 'user-status-bar';
-        
-        if (userData.isSubscribed) {
-            statusBar.innerHTML = `
-                <div class="bg-green-500 text-white px-4 py-2 text-sm">
-                    ✨ PRO MEMBER - Unlimited Generations
-                </div>
-            `;
-        } else if (statusInfo.allowed) {
-            statusBar.innerHTML = `
-                <div class="bg-blue-500 text-white px-4 py-2 text-sm flex justify-between items-center">
-                    <span>🎁 Free Trial: ${statusInfo.remaining} generations left today</span>
-                    <button onclick="userManager.showUpgradeModal()" class="bg-yellow-500 hover:bg-yellow-600 px-3 py-1 rounded text-xs font-bold">
-                        UPGRADE $1/month
-                    </button>
-                </div>
-            `;
-        } else {
-            statusBar.innerHTML = `
-                <div class="bg-red-500 text-white px-4 py-2 text-sm flex justify-between items-center">
-                    <span>⚠️ Daily limit reached (${userData.freeGenerationsLimit} free generations)</span>
-                    <button onclick="userManager.showUpgradeModal()" class="bg-yellow-500 hover:bg-yellow-600 px-3 py-1 rounded text-xs font-bold">
-                        UPGRADE NOW $1/month
-                    </button>
-                </div>
-            `;
-        }
-
-        // Insert after navigation
-        const nav = document.querySelector('nav');
-        nav.insertAdjacentElement('afterend', statusBar);
-    }
-
-    // Show upgrade modal
-    showUpgradeModal() {
-        const modal = document.createElement('div');
-        modal.id = 'upgrade-modal';
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center';
-        
-        modal.innerHTML = `
-            <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center">
-                <div class="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-crown text-white text-2xl"></i>
-                </div>
-                
-                <h3 class="font-poppins font-bold text-2xl text-gray-900 mb-4">
-                    Upgrade to Pro
-                </h3>
-                
-                <p class="text-gray-600 mb-6">
-                    Get unlimited hook generations for just <strong>$1/month</strong>
-                </p>
-                
-                <div class="bg-blue-50 rounded-lg p-4 mb-6">
-                    <h4 class="font-semibold text-gray-900 mb-2">Pro Benefits:</h4>
-                    <ul class="text-sm text-gray-700 text-left space-y-1">
-                        <li>✅ Unlimited daily generations</li>
-                        <li>✅ All 4 generation methods</li>
-                        <li>✅ Priority API access (faster)</li>
-                        <li>✅ Export & save features</li>
-                        <li>✅ No ads or limitations</li>
-                    </ul>
-                </div>
-                
-                <div class="space-y-3">
-                    <button id="start-subscription" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
-                        Start Pro Subscription - $1/month
-                    </button>
-                    
-                    <button onclick="userManager.closeUpgradeModal()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-6 rounded-lg transition-colors">
-                        Maybe Later
-                    </button>
-                </div>
-                
-                <p class="text-xs text-gray-500 mt-4">
-                    Cancel anytime. No hidden fees.
-                </p>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-        
-        // Handle subscription button
-        document.getElementById('start-subscription').addEventListener('click', () => {
-            this.initializePayment();
+        // Hook generation forms - add trial check
+        document.querySelectorAll('.method-form').forEach(form => {
+            form.addEventListener('submit', (e) => this.checkTrialLimit(e));
         });
     }
 
-    // Close upgrade modal
-    closeUpgradeModal() {
-        const modal = document.getElementById('upgrade-modal');
-        if (modal) modal.remove();
-    }
-
-    // Initialize payment (Stripe integration)
-    async initializePayment() {
-        try {
-            const userData = this.getUserData();
-            
-            // Get email from user (you can add an email input to the modal)
-            const email = prompt('Enter your email address for billing:');
-            if (!email) return;
-
-            // Create Stripe checkout session
-            const response = await fetch('/api/create-checkout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    userId: userData.userId,
-                    email: email
-                })
-            });
-
-            const { sessionId, url } = await response.json();
-
-            if (url) {
-                // Redirect to Stripe Checkout
-                window.location.href = url;
-            } else {
-                throw new Error('Failed to create checkout session');
-            }
-
-        } catch (error) {
-            console.error('Payment initialization failed:', error);
-            
-            // For testing/demo purposes, offer simulation
-            if (confirm('Payment setup in progress. Simulate successful payment for demo?')) {
-                this.upgradeToProUser();
+    checkAuthState() {
+        const userData = localStorage.getItem('hookGenerator_user');
+        if (userData) {
+            try {
+                this.currentUser = JSON.parse(userData);
+                this.isAuthenticated = true;
+                this.updateLastLogin();
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+                localStorage.removeItem('hookGenerator_user');
             }
         }
     }
 
-    // Upgrade user to Pro
-    upgradeToProUser() {
-        const userData = this.getUserData();
-        userData.isSubscribed = true;
-        userData.subscriptionType = 'pro';
-        userData.subscriptionDate = new Date().toISOString();
-        
-        localStorage.setItem('hookUserData', JSON.stringify(userData));
-        
-        this.closeUpgradeModal();
-        this.updateUIBasedOnStatus(userData);
-        
-        // Show success message
-        this.showSuccessMessage('🎉 Welcome to Pro! You now have unlimited generations.');
+    async updateLastLogin() {
+        if (this.currentUser) {
+            try {
+                const response = await fetch('tables/users/' + this.currentUser.id, {
+                    method: 'PATCH',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        last_login: new Date().toISOString()
+                    })
+                });
+
+                if (response.ok) {
+                    const updatedUser = await response.json();
+                    this.currentUser = updatedUser;
+                    localStorage.setItem('hookGenerator_user', JSON.stringify(updatedUser));
+                }
+            } catch (error) {
+                console.error('Error updating last login:', error);
+            }
+        }
     }
 
-    // Show success message
-    showSuccessMessage(message) {
-        const toast = document.createElement('div');
-        toast.className = 'fixed bottom-6 right-6 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50';
-        toast.textContent = message;
+    showSignupModal() {
+        document.getElementById('modalTitle').textContent = 'Get Started Free';
+        document.getElementById('signupForm').classList.remove('hidden');
+        document.getElementById('loginForm').classList.add('hidden');
+        document.getElementById('toggleAuthForm').textContent = 'Already have an account? Sign in';
+        document.getElementById('authModal').classList.remove('hidden');
+        document.querySelector('.modal-content').classList.add('modal-enter');
+    }
+
+    showLoginModal() {
+        document.getElementById('modalTitle').textContent = 'Welcome Back';
+        document.getElementById('loginForm').classList.remove('hidden');
+        document.getElementById('signupForm').classList.add('hidden');
+        document.getElementById('toggleAuthForm').textContent = "Don't have an account? Sign up free";
+        document.getElementById('authModal').classList.remove('hidden');
+        document.querySelector('.modal-content').classList.add('modal-enter');
+    }
+
+    hideModal() {
+        document.getElementById('authModal').classList.add('hidden');
+        this.clearFormErrors();
+    }
+
+    toggleAuthForm() {
+        const signupForm = document.getElementById('signupForm');
+        const loginForm = document.getElementById('loginForm');
+        const toggleBtn = document.getElementById('toggleAuthForm');
+        const modalTitle = document.getElementById('modalTitle');
+
+        if (signupForm.classList.contains('hidden')) {
+            // Show signup form
+            signupForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+            modalTitle.textContent = 'Get Started Free';
+            toggleBtn.textContent = 'Already have an account? Sign in';
+        } else {
+            // Show login form
+            loginForm.classList.remove('hidden');
+            signupForm.classList.add('hidden');
+            modalTitle.textContent = 'Welcome Back';
+            toggleBtn.textContent = "Don't have an account? Sign up free";
+        }
+        this.clearFormErrors();
+    }
+
+    async handleSignup(e) {
+        e.preventDefault();
         
-        document.body.appendChild(toast);
+        const name = document.getElementById('signupName').value.trim();
+        const email = document.getElementById('signupEmail').value.trim();
+        const password = document.getElementById('signupPassword').value;
+
+        if (!this.validateSignupForm(name, email, password)) {
+            return;
+        }
+
+        try {
+            // Check if user already exists
+            const existingUserResponse = await fetch(`tables/users?search=${encodeURIComponent(email)}`);
+            const existingUserData = await existingUserResponse.json();
+
+            if (existingUserData.data && existingUserData.data.length > 0) {
+                this.showFormError('signupEmail', 'An account with this email already exists');
+                return;
+            }
+
+            // Create new user
+            const userData = {
+                email: email,
+                name: name,
+                password_hash: await this.hashPassword(password),
+                trial_uses_remaining: this.trialLimit,
+                is_premium: false,
+                signup_date: new Date().toISOString(),
+                last_login: new Date().toISOString(),
+                total_hooks_generated: 0
+            };
+
+            const response = await fetch('tables/users', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(userData)
+            });
+
+            if (response.ok) {
+                const newUser = await response.json();
+                this.currentUser = newUser;
+                this.isAuthenticated = true;
+                localStorage.setItem('hookGenerator_user', JSON.stringify(newUser));
+                
+                this.hideModal();
+                this.updateUI();
+                this.showToast('success', 'Account created successfully! Welcome to Hook Generator Pro!');
+            } else {
+                throw new Error('Failed to create account');
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+            this.showToast('error', 'Failed to create account. Please try again.');
+        }
+    }
+
+    async handleLogin(e) {
+        e.preventDefault();
         
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        if (!this.validateLoginForm(email, password)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`tables/users?search=${encodeURIComponent(email)}`);
+            const userData = await response.json();
+
+            if (!userData.data || userData.data.length === 0) {
+                this.showFormError('loginEmail', 'No account found with this email');
+                return;
+            }
+
+            const user = userData.data[0];
+            const isPasswordValid = await this.verifyPassword(password, user.password_hash);
+
+            if (!isPasswordValid) {
+                this.showFormError('loginPassword', 'Incorrect password');
+                return;
+            }
+
+            this.currentUser = user;
+            this.isAuthenticated = true;
+            localStorage.setItem('hookGenerator_user', JSON.stringify(user));
+            
+            this.hideModal();
+            this.updateUI();
+            this.updateLastLogin();
+            this.showToast('success', `Welcome back, ${user.name}!`);
+        } catch (error) {
+            console.error('Login error:', error);
+            this.showToast('error', 'Failed to sign in. Please try again.');
+        }
+    }
+
+    logout() {
+        this.currentUser = null;
+        this.isAuthenticated = false;
+        localStorage.removeItem('hookGenerator_user');
+        this.updateUI();
+        this.showToast('info', 'You have been signed out');
+    }
+
+    updateUI() {
+        const userInfo = document.getElementById('userInfo');
+        const authButtons = document.getElementById('authButtons');
+        const userName = document.getElementById('userName');
+        const trialCounter = document.getElementById('trialCounter');
+
+        if (this.isAuthenticated && this.currentUser) {
+            // Show user info, hide auth buttons
+            userInfo.classList.remove('hidden');
+            userInfo.classList.add('flex');
+            authButtons.classList.add('hidden');
+
+            // Update user info
+            userName.textContent = this.currentUser.name;
+            
+            if (this.currentUser.is_premium) {
+                trialCounter.textContent = 'Premium';
+                trialCounter.className = 'ml-2 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium';
+            } else {
+                const remaining = this.currentUser.trial_uses_remaining || 0;
+                trialCounter.textContent = `${remaining} free use${remaining !== 1 ? 's' : ''} left`;
+                trialCounter.className = remaining > 0 ? 
+                    'ml-2 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium' :
+                    'ml-2 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium';
+            }
+        } else {
+            // Show auth buttons, hide user info
+            userInfo.classList.add('hidden');
+            userInfo.classList.remove('flex');
+            authButtons.classList.remove('hidden');
+        }
+
+        this.updateTrialWarning();
+    }
+
+    updateTrialWarning() {
+        const trialWarning = document.getElementById('trialWarning');
+        
+        if (!this.isAuthenticated || (!this.currentUser.is_premium && this.currentUser.trial_uses_remaining <= 0)) {
+            trialWarning.classList.remove('hidden');
+        } else {
+            trialWarning.classList.add('hidden');
+        }
+    }
+
+    handleHeroStart() {
+        if (!this.isAuthenticated) {
+            this.showSignupModal();
+        } else {
+            // Scroll to the generator
+            document.querySelector('main').scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    async checkTrialLimit(e) {
+        if (!this.isAuthenticated) {
+            e.preventDefault();
+            this.showSignupModal();
+            this.showToast('warning', 'Please sign up to generate hooks');
+            return false;
+        }
+
+        if (!this.currentUser.is_premium && this.currentUser.trial_uses_remaining <= 0) {
+            e.preventDefault();
+            this.showSignupModal();
+            this.showToast('warning', 'Trial limit reached. Sign up for unlimited access!');
+            return false;
+        }
+
+        return true;
+    }
+
+    async decrementTrialUse() {
+        if (this.currentUser && !this.currentUser.is_premium && this.currentUser.trial_uses_remaining > 0) {
+            try {
+                const updatedData = {
+                    trial_uses_remaining: this.currentUser.trial_uses_remaining - 1,
+                    total_hooks_generated: (this.currentUser.total_hooks_generated || 0) + 1
+                };
+
+                const response = await fetch('tables/users/' + this.currentUser.id, {
+                    method: 'PATCH',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(updatedData)
+                });
+
+                if (response.ok) {
+                    const updatedUser = await response.json();
+                    this.currentUser = updatedUser;
+                    localStorage.setItem('hookGenerator_user', JSON.stringify(updatedUser));
+                    this.updateUI();
+                }
+            } catch (error) {
+                console.error('Error updating trial usage:', error);
+            }
+        }
+    }
+
+    async logUsage(hookType, inputText, generatedHooks) {
+        if (this.currentUser) {
+            try {
+                const logData = {
+                    user_id: this.currentUser.id,
+                    hook_type: hookType,
+                    input_text: inputText,
+                    generated_hooks: JSON.stringify(generatedHooks),
+                    timestamp: new Date().toISOString(),
+                    ip_address: 'N/A' // Would be set by backend in real app
+                };
+
+                await fetch('tables/usage_logs', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(logData)
+                });
+            } catch (error) {
+                console.error('Error logging usage:', error);
+            }
+        }
+    }
+
+    validateSignupForm(name, email, password) {
+        let isValid = true;
+
+        if (!name || name.length < 2) {
+            this.showFormError('signupName', 'Name must be at least 2 characters');
+            isValid = false;
+        }
+
+        if (!this.isValidEmail(email)) {
+            this.showFormError('signupEmail', 'Please enter a valid email address');
+            isValid = false;
+        }
+
+        if (!password || password.length < 6) {
+            this.showFormError('signupPassword', 'Password must be at least 6 characters');
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    validateLoginForm(email, password) {
+        let isValid = true;
+
+        if (!this.isValidEmail(email)) {
+            this.showFormError('loginEmail', 'Please enter a valid email address');
+            isValid = false;
+        }
+
+        if (!password) {
+            this.showFormError('loginPassword', 'Password is required');
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    showFormError(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        field.classList.add('error-border');
+        
+        // Remove existing error message
+        const existingError = field.parentNode.querySelector('.error-message');
+        if (existingError) {
+            existingError.remove();
+        }
+
+        // Add new error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message text-sm text-red-600 mt-1';
+        errorDiv.textContent = message;
+        field.parentNode.appendChild(errorDiv);
+
+        // Clear error on input
+        field.addEventListener('input', () => {
+            field.classList.remove('error-border');
+            const errorMsg = field.parentNode.querySelector('.error-message');
+            if (errorMsg) {
+                errorMsg.remove();
+            }
+        }, { once: true });
+    }
+
+    clearFormErrors() {
+        document.querySelectorAll('.error-border').forEach(field => {
+            field.classList.remove('error-border');
+        });
+        document.querySelectorAll('.error-message').forEach(msg => {
+            msg.remove();
+        });
+    }
+
+    async hashPassword(password) {
+        // Simple hash for demo - in production use proper password hashing
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password + 'hook_generator_salt');
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async verifyPassword(password, hash) {
+        const passwordHash = await this.hashPassword(password);
+        return passwordHash === hash;
+    }
+
+    showToast(type, message) {
+        const toast = document.getElementById('toast');
+        const icon = document.getElementById('toastIcon');
+        const messageEl = document.getElementById('toastMessage');
+        
+        // Set icon based on type
+        const icons = {
+            success: '<i class="fas fa-check-circle text-green-500"></i>',
+            error: '<i class="fas fa-exclamation-circle text-red-500"></i>',
+            warning: '<i class="fas fa-exclamation-triangle text-yellow-500"></i>',
+            info: '<i class="fas fa-info-circle text-blue-500"></i>'
+        };
+        
+        icon.innerHTML = icons[type] || icons.info;
+        messageEl.textContent = message;
+        
+        toast.className = `fixed top-4 right-4 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm toast-${type}`;
+        toast.classList.remove('hidden');
+        
+        // Auto hide after 5 seconds
         setTimeout(() => {
-            toast.remove();
-        }, 4000);
-    }
-
-    // Generate unique user ID
-    generateUserId() {
-        return 'user_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
-    }
-
-    // Setup authentication UI
-    setupAuthUI() {
-        // Add login/register buttons if needed
-        // This is where you'd add email collection for better user tracking
-    }
-
-    // Admin function to view user stats
-    getUserStats() {
-        const userData = this.getUserData();
-        console.log('User Statistics:', userData);
-        return userData;
+            toast.classList.add('hidden');
+        }, 5000);
+        
+        // Close button
+        document.getElementById('closeToast').addEventListener('click', () => {
+            toast.classList.add('hidden');
+        }, { once: true });
     }
 }
 
-// Initialize user manager
-const userManager = new UserManager();
+// Initialize auth manager when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.authManager = new AuthManager();
+});
