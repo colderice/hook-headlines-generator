@@ -1,0 +1,22 @@
+{
+  "buildCommand": "",
+  "outputDirectory": "./",
+  "installCommand": "echo 'No install needed'",
+  "functions": {
+    "api/generate-hooks.js": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/generate-hooks",
+      "destination": "/api/generate-hooks.js"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
+}

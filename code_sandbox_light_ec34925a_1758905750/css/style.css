@@ -1,0 +1,243 @@
+/* Custom styles for Hook & Headlines Generator */
+
+/* Smooth scrolling and overall improvements */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Custom animations and transitions */
+.input-method-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-method-card:hover {
+    transform: translateY(-4px);
+}
+
+.input-method-card.active {
+    transform: translateY(-2px);
+}
+
+.input-method-card.active .bg-white {
+    border-color: #0ea5e9;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+/* Form animations */
+.form-slide-in {
+    animation: slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Results animations */
+.result-item {
+    animation: fadeInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    animation-fill-mode: both;
+}
+
+.result-item:nth-child(1) { animation-delay: 0.1s; }
+.result-item:nth-child(2) { animation-delay: 0.2s; }
+.result-item:nth-child(3) { animation-delay: 0.3s; }
+.result-item:nth-child(4) { animation-delay: 0.4s; }
+.result-item:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Custom form styling */
+.form-input {
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.form-input:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Custom button styles */
+.btn-primary {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0284c7 0%, #075985 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(14, 165, 233, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Copy button animation */
+.copy-success {
+    animation: copyPulse 0.6s ease-out;
+}
+
+@keyframes copyPulse {
+    0% {
+        transform: scale(1);
+        background-color: #10b981;
+    }
+    50% {
+        transform: scale(1.05);
+        background-color: #059669;
+    }
+    100% {
+        transform: scale(1);
+        background-color: #10b981;
+    }
+}
+
+/* Loading spinner enhancement */
+.loading-spinner {
+    animation: spin 1s linear infinite;
+    filter: drop-shadow(0 4px 8px rgba(14, 165, 233, 0.3));
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Toast notification styles */
+.toast-slide-in {
+    animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast-slide-out {
+    animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+/* Gradient text effects */
+.gradient-text {
+    background: linear-gradient(135deg, #0ea5e9, #f59e0b);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #0284c7, #075985);
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .input-method-card {
+        margin-bottom: 1rem;
+    }
+    
+    .hero-text {
+        font-size: 2.5rem;
+        line-height: 1.1;
+    }
+    
+    .form-container {
+        padding: 1.5rem;
+    }
+}
+
+/* Focus styles for accessibility */
+.focus-visible {
+    outline: 2px solid #0ea5e9;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .input-method-card .bg-white {
+        border: 2px solid #000;
+    }
+    
+    .text-gray-600 {
+        color: #000 !important;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+    }
+    
+    .bg-gradient-to-r {
+        background: #f8f9fa !important;
+        color: #000 !important;
+    }
+}
